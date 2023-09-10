@@ -4,10 +4,14 @@ import com.business.discovery.app.rest.controller.model.Hours;
 import com.business.discovery.app.rest.controller.model.OpeningHoursResponse;
 import com.business.discovery.app.rest.controller.model.PlaceResponse;
 import com.business.discovery.app.rest.controller.model.PlacesInfoResponse;
+import com.business.discovery.app.rest.model.OpeningHoursEntity;
+import com.business.discovery.app.rest.model.PlaceEntity;
 import com.business.discovery.app.rest.service.PlacesInfoService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -15,7 +19,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -25,9 +31,11 @@ import static org.mockito.Mockito.when;
 class RestApiApplicationTests {
 
 	private final String LABEL1 = "McDonalds";
+	private final String LABEL2 = "Burger King";
 	private final String LOCATION1 = "Coina, Barreiro";
+	private final String LOCATION2 = "Zurich, Switzerland";
 	private final String MONDAY = "Monday";
-
+    private PlaceEntity placeEntity1;
 
 	@Autowired
 	private PlacesInfoService service;
@@ -36,23 +44,16 @@ class RestApiApplicationTests {
 	void contextLoads() {
 	}
 
+	// In memory database would be a good idea, H2 is an example. I did not have enough time to implement
 	@Test
 	public void testGetAllPlacesInfo(){
 		PlacesInfoResponse places = service.getAllPlacesInfoWithOpeningHours();
-		Assertions.assertThat(places.getPlaces().size()).isEqualTo(2);
-		Assertions.assertThat(places.getPlaces()).extracting(PlaceResponse::getLabel).containsExactlyInAnyOrder(LABEL1, LABEL1);
-		Assertions.assertThat(places.getPlaces()).extracting(PlaceResponse::getLocation).containsExactlyInAnyOrder(LOCATION1, LOCATION1);
+		Assertions.assertThat(places.getPlaces().size()).isEqualTo(1);
+		Assertions.assertThat(places.getPlaces()).extracting(PlaceResponse::getLabel).containsExactlyInAnyOrder(LABEL2);
+		Assertions.assertThat(places.getPlaces()).extracting(PlaceResponse::getLocation).containsExactlyInAnyOrder(LOCATION2);
 		Assertions.assertThat(places.getPlaces()).flatExtracting(PlaceResponse::getDays).extracting(OpeningHoursResponse::getDay).contains(MONDAY);
 		Assertions.assertThat(places.getPlaces()).flatExtracting(PlaceResponse::getDays).flatExtracting(OpeningHoursResponse::getOpeningHours)
 				.extracting(Hours::getStart).contains("09:00");
-	}
-
-	@Test
-	public void testGetAllPlacesInfoNoOpeningHours(){
-		PlacesInfoResponse places = service.getAllPlacesInfoWithOpeningHours();
-		Assertions.assertThat(places.getPlaces().size()).isEqualTo(2);
-		Assertions.assertThat(places.getPlaces()).extracting(PlaceResponse::getLabel).containsExactlyInAnyOrder(LABEL1, LABEL1);
-		Assertions.assertThat(places.getPlaces()).extracting(PlaceResponse::getLocation).containsExactlyInAnyOrder(LOCATION1, LOCATION1);
 	}
 
 	@Test
@@ -75,5 +76,17 @@ class RestApiApplicationTests {
 		Assertions.assertThat((String) queryResult.get(0)[5]).isEqualTo("21:00");
 		Assertions.assertThat((String) queryResult.get(0)[6]).isEqualTo("11:00");
 		Assertions.assertThat((String) queryResult.get(0)[7]).isEqualTo("12:30");
+	}
+
+	@BeforeEach
+	public void setup(){
+		OpeningHoursEntity openingHoursEntity = new OpeningHoursEntity(MONDAY, "09:00", "21:00", "11:00", "12:30");
+		placeEntity1 = new PlaceEntity(LABEL2, LOCATION2, new ArrayList<>(Collections.singleton(openingHoursEntity)));
+		service.addPlace(placeEntity1);
+	}
+
+	@AfterEach
+	public void clearDb() {
+		service.deletePlace(placeEntity1.getUid());
 	}
 }

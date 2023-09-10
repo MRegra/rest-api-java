@@ -34,9 +34,11 @@ public class PlaceEntity {
     @JoinColumn(name = "fk_places_uid", nullable = false, referencedColumnName = "uid")
     private List<OpeningHoursEntity> openingHourEntities;
 
+    public PlaceEntity() {
+    }
+
     //For testing
-    public PlaceEntity(long uid, String label, String location, List<OpeningHoursEntity> openingHourEntities) {
-        this.uid = uid;
+    public PlaceEntity(String label, String location, List<OpeningHoursEntity> openingHourEntities) {
         this.label = label;
         this.location = location;
         this.openingHourEntities = openingHourEntities;

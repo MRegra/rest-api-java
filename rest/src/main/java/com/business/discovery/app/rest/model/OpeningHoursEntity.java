@@ -36,8 +36,11 @@ public class OpeningHoursEntity {
     @Column
     private String breakEndTime;
 
+    public OpeningHoursEntity() {
+    }
+
     //For testing
-    public OpeningHoursEntity(long uid, String day, String openTime, String closeTime, String breakStartTime, String breakEndTime) {
+    public OpeningHoursEntity(String day, String openTime, String closeTime, String breakStartTime, String breakEndTime) {
         this.uid = uid;
         this.day = day;
         this.openTime = openTime;

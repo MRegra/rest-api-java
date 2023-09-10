@@ -12,9 +12,10 @@ import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * @author MRegra on import java.util.List;/09/2023
@@ -39,6 +40,15 @@ public class PlacesInfoService {
     public String addPlace(PlaceEntity placeEntity){
         repository.save(placeEntity);
         return "New place added!";
+    }
+
+    public String deletePlace(long placeUid){
+        Optional<PlaceEntity> placeEntity = repository.findById(placeUid);
+        if(placeEntity.isPresent()){
+            repository.delete(placeEntity.get());
+            return "Place deleted!";
+        }
+        return "Nothing to be deleted";
     }
 
     public PlacesInfoResponse getAllPlacesInfoWithOpeningHours(){
