@@ -28,6 +28,10 @@ public class PlacesInfoService {
     @Autowired
     private IPlacesInfoRepository repository;
 
+    public PlacesInfoService(EntityManager em) {
+        this.em = em;
+    }
+
     public List<PlaceEntity> getAllPlacesInfo() {
         return repository.getAllPlacesInfo();
     }
@@ -38,10 +42,15 @@ public class PlacesInfoService {
     }
 
     public PlacesInfoResponse getAllPlacesInfoWithOpeningHours(){
-        String queryString = "SELECT p.uid, p.label, p.location, o.day, o.open_time, o.close_time, o.break_start_time, o.break_end_time FROM place p JOIN opening_hours o ON o.fk_places_uid = p.uid ";
+        String queryString = "SELECT p.uid, p.label, p.location, o.day, o.open_time, o.close_time, o.break_start_time, o.break_end_time " +
+                "FROM place p " +
+                "JOIN opening_hours o ON o.fk_places_uid = p.uid ";
+        return parseQueryResult(getResultList(queryString));
+    }
+
+    public List<Object[]> getResultList(String queryString){
         Query query = em.createNativeQuery(queryString);
-        List<Object[]> rawResultList = (List<Object[]>) query.getResultList();
-        return parseQueryResult(rawResultList);
+        return (List<Object[]>) query.getResultList();
     }
 
     private PlacesInfoResponse parseQueryResult(List<Object[]> rawResultList){
